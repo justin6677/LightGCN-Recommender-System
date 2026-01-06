@@ -1,18 +1,12 @@
-# High-Performance LightGCN Recommender System Microservice
+High-Performance LightGCN Recommender System Microservice
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c)](https://pytorch.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Container-2496ed)](https://www.docker.com/)
+這是一個基於 LightGCN (Light Graph Convolutional Network) 的高效能推薦系統微服務。
+專案整合了 Hard Negative Sampling 演算法優化、Scipy 稀疏矩陣記憶體優化，並使用 FastAPI 與 Docker 實現容器化部署，是一套完整的 MLOps 實踐案例。
 
-這是一個基於 **LightGCN (Light Graph Convolutional Network)** 的高效能推薦系統微服務。
-專案整合了 **Hard Negative Sampling** 演算法優化、**Scipy 稀疏矩陣記憶體優化**，並使用 **FastAPI** 與 **Docker** 實現容器化部署，是一套完整的 MLOps 實踐案例。
-
-##  專案結構與檔案說明 (Project Structure)
+📂 專案結構與檔案說明 (Project Structure)
 
 本專案採用模組化設計，各檔案功能如下：
 
-```text
 LightGCN_Recommender/
 ├── src/                        # [核心模組]
 │   ├── dataset.py              # 資料處理層
@@ -29,10 +23,10 @@ LightGCN_Recommender/
 │   │   - 動態挑選分數高但非正樣本的項目進行訓練，提升模型區別能力。
 │   │
 │   └── utils.py                # 工具層
-│   │   - 包含 BPR Loss (Bayesian Personalized Ranking) 損失函數。
-│   │   - 實作評估指標：Recall@K 與 NDCG@K。
-│   │   - 設定 Random Seed 確保實驗可重現。
-│   │
+│       - 包含 BPR Loss (Bayesian Personalized Ranking) 損失函數。
+│       - 實作評估指標：Recall@K 與 NDCG@K。
+│       - 設定 Random Seed 確保實驗可重現。
+│
 ├── main.py                     # [訓練入口]
 │   - 負責整合 Dataset, Model, Sampler 進行模型訓練。
 │   - 執行 Uniform vs Hard Negative 的對照實驗。
@@ -51,8 +45,10 @@ LightGCN_Recommender/
 └── comparison_result.png       # [實驗結果圖]
 
 
-系統運作原理 (How it Works)
+⚙️ 系統運作原理 (How it Works)
+
 1. 模型訓練流程 (main.py)
+
 資料載入: Loader 讀取 Gowalla 數據，建構 User-Item 二分圖的鄰接矩陣 (Adjacency Matrix)。
 
 圖卷積: LightGCN 模型將 User 和 Item 的 Embedding 在圖上傳播 (Propagation)，聚合鄰居特徵。
@@ -64,6 +60,7 @@ LightGCN_Recommender/
 評估與存檔: 每隔數個 Epoch 計算 Recall/NDCG，訓練結束後儲存 lightgcn_model.pth。
 
 2. 推論服務流程 (server.py)
+
 啟動: Docker 啟動時，lifespan 函數會自動載入 lightgcn_model.pth 到記憶體 (GPU/CPU)。
 
 請求: 當使用者呼叫 GET /recommend/10。
@@ -74,34 +71,54 @@ LightGCN_Recommender/
 
 回傳: 以 JSON 格式回傳推薦列表。
 
-快速開始 (Quick Start)
-方法 1: 使用 Docker 啟動 (推薦)
-這是最簡單的方法，不需要在本地安裝 Python 環境。
+🚀 快速開始 (Quick Start)
 
-Bash
+步驟 0: 準備資料集
+
+由於資料集較大未上傳至 GitHub，請先下載 Gowalla 資料集並放入 data 資料夾：
+
+建立資料夾：mkdir -p data/gowalla
+
+將 train.txt 與 test.txt 放入 data/gowalla/ 中。
+
+方法 1: 使用 Docker 啟動 (推薦)
+
+這是最簡單的方法，不需要在本地安裝 Python 環境。
 
 # 1. 建置映像檔 (這會讀取 Dockerfile 並安裝所有套件)
 docker build -t lightgcn-app .
 
 # 2. 啟動容器 (將容器的 8000 port 對應到本機的 8000 port)
 docker run -p 8000:8000 lightgcn-app
+
+
 方法 2: 本機開發執行
-Bash
 
 # 1. 建立虛擬環境 & 安裝依賴
 python -m venv venv
+# Windows:
 .\venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
 pip install -r requirements.txt
 
-# 2. 執行訓練 (會產出 lightgcn_model.pth)
+# 2. 執行訓練 (會產出 lightgcn_model.pth 與比較圖表)
 python main.py
 
 # 3. 啟動 API Server
 python server.py
-效能比較 (Performance)
-本專案比較了 Hard Negative Sampling (紅線) 與傳統 Uniform Sampling (灰線) 的訓練效果。 可以看到改進後的方法在 Recall@20 與 NDCG@20 均有顯著提升，證明困難負採樣能有效幫助模型學習細微特徵。
+
+
+📊 效能比較 (Performance)
+
+本專案比較了 Hard Negative Sampling (紅線) 與傳統 Uniform Sampling (灰線) 的訓練效果。
+可以看到改進後的方法在 Recall@20 與 NDCG@20 均有顯著提升，證明困難負採樣能有效幫助模型學習細微特徵。
+
+(執行 main.py 後會自動生成此圖表)
 
 🔗 API 文件
+
 啟動服務後，可訪問 Swagger UI 進行互動式測試：
 
 文件網址: http://localhost:8000/docs
@@ -109,8 +126,6 @@ python server.py
 推論接口: GET /recommend/{user_id}
 
 Example Response:
-
-JSON
 
 {
   "user_id": 10,

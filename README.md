@@ -131,4 +131,4 @@ Example Response:
   "user_id": 10,
   "top_k": 5,
   "recommendations": [1302, 1292, 1307, 1638, 211]
-}
+}  

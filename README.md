@@ -7,6 +7,7 @@ High-Performance LightGCN Recommender System Microservice
 
 本專案採用模組化設計，各檔案功能如下：
 
+```text
 LightGCN_Recommender/
 ├── src/                        # [核心模組]
 │   ├── dataset.py              # 資料處理層
@@ -43,7 +44,6 @@ LightGCN_Recommender/
 │   
 ├── requirements.txt            # [套件清單]
 └── comparison_result.png       # [實驗結果圖]
-
 
 ⚙️ 系統運作原理 (How it Works)
 
